@@ -20,59 +20,67 @@ const deviceMetaPath = './config/device.info'
 //   console.log(contents)
 // })
 var contents = fs.readFileSync(path.join(__dirname, deviceMetaPath), 'utf8')
-if (!contents) {
-  return
+const selfSt = contents
+
+const listen = () => {
+  const socket = dgram.createSocket('udp4')
+  socket.on('listening', () => {
+    socket.addMembership('239.255.255.250')
+  })
+
+  socket.on('message', msgBuf => {
+    if (!selfSt) {
+      return
+    }
+
+    msg = msgBuf.toString()
+    if (
+      msg.indexOf('M-SEARCH') >= 0 &&
+      (msg.indexOf('urn:things-factory:device:all:all') >= 0 || msg.indexOf(selfSt) >= 0)
+    ) {
+      // let addrInfos = device.getNetworkAddress()
+      // if (!addrInfos || addrInfos.length == 0) {
+      //   console.warn('network is not avaliable!!')
+      //   return
+      // }
+      // let { ipAddress, macAddress } = addrInfos[0]
+
+      let deviceInfo = device.getInfo()
+      let { ipAddress, macAddress } = deviceInfo
+      let cacheAge = 60
+      let headers = [
+        'HTTP/1.1 200 OK',
+        `CACHE-CONTROL: max-age = ${cacheAge}`,
+        `LOCATION: ${ipAddress}`,
+        `ST: ${selfSt}`,
+        `USN: ${macAddress}` // electron으로 build했을때 값이 없음.
+      ].join('\r\n')
+
+      console.log(headers)
+      const response = new Buffer(headers)
+      socket.send(response, 0, response.length, 1900, '239.255.255.250')
+    }
+  })
+
+  socket.bind(1900)
 }
 
-const selfSt = contents
-const socket = dgram.createSocket('udp4')
-socket.on('listening', () => {
-  socket.addMembership('239.255.255.250')
-
-  const searchAll = new Buffer(
+const search = (st) => {
+  const search = new Buffer(
     [
       'M-SEARCH * HTTP/1.1',
       'HOST: 239.255.255.250:1900',
       'MAN: "ssdp:discover"',
       'MX: 1',
-      'ST: urn:things-factory:device:all:all'
+      `ST: ${st}`
     ].join('\r\n')
   )
-  socket.send(searchAll, 0, searchAll.length, 1900, '239.255.255.250')
-})
+  socket.send(search, 0, search.length, 1900, '239.255.255.250')
+}
 
-const info = null
-socket.on('message', msgBuf => {
-  msg = msgBuf.toString()
-  if (
-    msg.indexOf('M-SEARCH') >= 0 &&
-    (msg.indexOf('urn:things-factory:device:all:all') >= 0 || msg.indexOf(selfSt) >= 0)
-  ) {
-    // let addrInfos = device.getNetworkAddress()
-    // if (!addrInfos || addrInfos.length == 0) {
-    //   console.warn('network is not avaliable!!')
-    //   return
-    // }
-    // let { ipAddress, macAddress } = addrInfos[0]
+module.exports = { search, listen }
 
-    let deviceInfo = device.getInfo()
-    let { ipAddress, macAddress } = deviceInfo
-    let cacheAge = 60
-    let headers = [
-      'HTTP/1.1 200 OK',
-      `CACHE-CONTROL: max-age = ${cacheAge}`,
-      `LOCATION: ${ipAddress}`,
-      `ST: ${selfSt}`,
-      `USN: ${macAddress}`  // electron으로 build했을때 값이 없음.
-    ].join('\r\n')
-
-    console.log(headers)
-    const response = new Buffer(headers)
-    socket.send(response, 0, response.length, 1900, '239.255.255.250')
-  }
-})
-
-socket.bind(1900)
+listen()
 
 
 
