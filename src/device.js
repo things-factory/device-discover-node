@@ -24,14 +24,14 @@ const getNetworkAddress = () => {
 
 const getInfo = () => {
   const os = require('os')
-  console.log(os.hostname()) // localhost
-  console.log(os.type()) // Darwin(MaxOS)
-  console.log(os.platform()) // drawin
-  console.log(os.release()) // 18.6.0?
-  console.log(os.arch()) // x64
-  console.log(os.totalmem() / 1024 / 1024 / 1024) // 8
-  console.log(os.cpus()[0].model) // Intel(R) Core(TM) i5-5257U CPU @ 2.70GHz
-  console.log(os.networkInterfaces()) //
+  // console.log(os.hostname()) // localhost
+  // console.log(os.type()) // Darwin(MaxOS)
+  // console.log(os.platform()) // drawin
+  // console.log(os.release()) // 18.6.0?
+  // console.log(os.arch()) // x64
+  // console.log(os.totalmem() / 1024 / 1024 / 1024) // 8
+  // console.log(os.cpus()[0].model) // Intel(R) Core(TM) i5-5257U CPU @ 2.70GHz
+  // console.log(os.networkInterfaces()) //
 
   return {
     hostname: os.hostname(),
