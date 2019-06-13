@@ -22,8 +22,8 @@ const deviceMetaPath = './config/device.info'
 var contents = fs.readFileSync(path.join(__dirname, deviceMetaPath), 'utf8')
 const selfSt = contents
 
+const socket = dgram.createSocket('udp4')
 const listen = () => {
-  const socket = dgram.createSocket('udp4')
   socket.on('listening', () => {
     socket.addMembership('239.255.255.250')
   })
