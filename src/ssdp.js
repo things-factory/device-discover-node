@@ -2,10 +2,12 @@ const fs = require('fs')
 const dgram = require('dgram')
 const path = require('path')
 const url = require('url')
+const ini = require('ini')
 
-const device = require('./src/device')
+const device = require('./device')
 
-const deviceMetaPath = './config/device.info'
+const deviceMetaPath = '../config/device.info'
+var config = ini.parse(fs.readFileSync(deviceMetaPath, 'utf-8'))
 
 // ST types:
 // 0. urn:things-factory:device:all:all
@@ -19,8 +21,8 @@ const deviceMetaPath = './config/device.info'
 // fs.readFile('DATA', 'utf8', function(err, contents) {
 //   console.log(contents)
 // })
-var contents = fs.readFileSync(path.join(__dirname, deviceMetaPath), 'utf8')
-const selfSt = contents
+// var contents = fs.readFileSync(path.join(__dirname, deviceMetaPath), 'utf8')
+const selfSt = config.st
 
 const socket = dgram.createSocket('udp4')
 const listen = responseCallback => {
@@ -38,6 +40,7 @@ const listen = responseCallback => {
       msg.indexOf('M-SEARCH') >= 0 &&
       (msg.indexOf('urn:things-factory:device:all:all') >= 0 || msg.indexOf(selfSt) >= 0)
     ) {
+      // console.log('M-SEARCH received~~~')
       // let addrInfos = device.getNetworkAddress()
       // if (!addrInfos || addrInfos.length == 0) {
       //   console.warn('network is not avaliable!!')
@@ -56,8 +59,8 @@ const listen = responseCallback => {
         `USN: ${macAddress}` // electron으로 build했을때 값이 없음.
       ].join('\r\n')
 
-      // console.log('send: ')
-      // console.log(headers)
+      console.log('send: ')
+      console.log(headers)
       const response = new Buffer(headers)
       socket.send(response, 0, response.length, 1900, '239.255.255.250')
     } else if (msg.indexOf('HTTP/1.1 200 OK') >= 0) {
