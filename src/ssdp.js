@@ -7,7 +7,9 @@ const ini = require('ini')
 const device = require('./device')
 
 const deviceMetaPath = '../config/device.info'
-var config = ini.parse(fs.readFileSync(deviceMetaPath, 'utf-8'))
+// var config = ini.parse(fs.readFileSync(deviceMetaPath, 'utf-8'))
+var config = ini.parse(fs.readFileSync(path.join(__dirname, deviceMetaPath), 'utf8'))
+const selfSt = config.st
 
 // ST types:
 // 0. urn:things-factory:device:all:all
@@ -17,12 +19,6 @@ var config = ini.parse(fs.readFileSync(deviceMetaPath, 'utf-8'))
 // 4. urn:things-factory:device:pda:android
 // 5. urn:things-factory:device:tablet:android
 // 6. urn:things-factory:device:browser:chrome
-
-// fs.readFile('DATA', 'utf8', function(err, contents) {
-//   console.log(contents)
-// })
-// var contents = fs.readFileSync(path.join(__dirname, deviceMetaPath), 'utf8')
-const selfSt = config.st
 
 const socket = dgram.createSocket('udp4')
 const listen = responseCallback => {
